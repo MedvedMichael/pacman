@@ -24,18 +24,18 @@ class Character:
         matrix_y = self.y // self.width + \
             (1 if self.y % self.width != 0 and self.direction == directions.UP else 0)
 
-        return (matrix_x, matrix_y)
+        return (matrix_y, matrix_x)
 
     def paintover(self, window):
         # Last method of paintover, redraws food!!!
         # draw_unit(window, draws.EMPTY, (self.x, self.y))
 
-        (matrix_x, matrix_y) = self.get_matrix_coordinates()
+        (matrix_y, matrix_x) = self.get_matrix_coordinates()
         draw_unit(window, self.matrix[matrix_y][matrix_x],
                   (matrix_x*self.width, matrix_y*self.width))
 
     def move(self):
-        (matrix_x, matrix_y) = self.get_matrix_coordinates()
+        (matrix_y, matrix_x) = self.get_matrix_coordinates()
 
         if self.x % self.width == 0 and self.y % self.width == 0:
             if self.choice != directions.NOWAY and \

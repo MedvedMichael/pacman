@@ -10,11 +10,13 @@ import pygame.transform as transform
 import directions
 import pygame.draw as pydraw
 from draws import unit_width, images, draw_unit
+import wayfinders
+import draws
 
 [empty, wall, small_food, big_food] = images
 
 matrix = list(map(lambda line: list(
-    map(lambda x: int(x), line[:-1])), open("level.txt", "r")))
+    map(lambda x: int(x), line[:-1])), open("level3.txt", "r")))
 
 player = Pacman(unit_width, unit_width, unit_width, matrix)
 
@@ -46,9 +48,6 @@ window = display.set_mode((width, height))
 display.set_caption("Pac-Man")
 
 
-
-
-
 def init_draw():
     matrix = player.matrix
     for i in range(len(matrix)):
@@ -70,13 +69,15 @@ def draw():
 
     if last_score != player.score:
         textsurface = font.render(
-            'Score: ' + str(player.score), False, (255, 255, 255))
+            'Score: ' + str(player.score) + "   Mode " + mode, False, (255, 255, 255))
         pydraw.rect(window, (0, 0, 0, 255), pygame.Rect(
             0, game_bounds[1]-40, game_bounds[0], game_bounds[1]))
         window.blit(textsurface, (10, game_bounds[1]-40))
     display.update()
 
+
 init_draw()
+
 
 def check_for_collisions():
     for enemy in enemies:
@@ -86,6 +87,9 @@ def check_for_collisions():
     return False
 
 
+mode = 'bfs'
+
+last_way = []
 run = True
 while run:
     pygame.time.delay(10)
@@ -108,6 +112,21 @@ while run:
         enemy.paintover(window)
         enemy.move()
 
+    if player.find_way:
+        player.find_way = False
+        func = wayfinders.bfs if mode == 'bfs' else wayfinders.dfs
+        way = func(matrix, player.get_matrix_coordinates(), (5, 5))
+        for node in last_way:
+            draw_unit(window, matrix[node[0]][node[1]],
+                      (node[1]*unit_width, node[0]*unit_width))
+        last_way = way
+        for i in range(len(way)):
+            pydraw.rect(window, ((i + 85) % 255, (i + 170) % 255, i % 255), pygame.Rect(
+                way[i][1]*unit_width, way[i][0]*unit_width, unit_width, unit_width))
+
+        pydraw.rect(window, (255, 0, 0), pygame.Rect(
+            5*unit_width, 5*unit_width, unit_width, unit_width), 2)
+
     draw()
 
     if keys[pygame.K_LEFT]:
@@ -121,3 +140,9 @@ while run:
 
     elif keys[pygame.K_DOWN]:
         player.change_direction(directions.DOWN)
+
+    elif keys[pygame.K_d]:
+        mode = 'dfs'
+    
+    elif keys[pygame.K_b]:
+        mode = 'bfs'

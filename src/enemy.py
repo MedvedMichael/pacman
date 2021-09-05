@@ -21,7 +21,7 @@ class Enemy(Character):
     def move(self):
         moved = Character.move(self)
         if not moved or (self.y % self.width == 0 and self.x % self.width == 0 and randint(0, 100) > 70):
-            (matrix_x, matrix_y) = self.get_matrix_coordinates()
+            (matrix_y, matrix_x) = self.get_matrix_coordinates()
             available_directions = []
             if self.matrix[matrix_y][matrix_x-1] != 1:
                 available_directions.append(directions.LEFT)

@@ -8,6 +8,7 @@ class Pacman(Character):
     def __init__(self, x, y, width, matrix):
         Character.__init__(self, x, y, width, matrix)
         self.score = 0
+        self.find_way = True
 
         walkRight = list(map(lambda x: transform.scale(x, (width, width)), [image.load(
             './assets/pacman/right1.png'), image.load('./assets/pacman/right2.png'), image.load('./assets/pacman/right3.png')]))
@@ -21,8 +22,9 @@ class Pacman(Character):
         self.walk_images = [walkLeft, walkUp, walkRight, walkDown]
 
     def move(self):
-        (matrix_x, matrix_y) = self.get_matrix_coordinates()
+        (matrix_y, matrix_x) = self.get_matrix_coordinates()
         if self.x % self.width == 0 and self.y % self.width == 0:
+            self.find_way = True
             if(self.matrix[matrix_y][matrix_x] == 2):
                 self.score += 1
                 self.matrix[matrix_y][matrix_x] = 0
@@ -30,4 +32,6 @@ class Pacman(Character):
                 self.score += 3
                 self.matrix[matrix_y][matrix_x] = 0
 
-        Character.move(self)
+        moved = Character.move(self)
+        if not moved:
+            self.find_way = False
