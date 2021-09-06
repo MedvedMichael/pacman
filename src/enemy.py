@@ -10,6 +10,7 @@ class Enemy(Character):
         Character.__init__(self, x, y, width, matrix)
         dirs = ["left", "up", "right", "down"]
         self.walk_images = []
+        self.color = type
         for name in dirs:
             self.walk_images.append(
                 [transform.scale(

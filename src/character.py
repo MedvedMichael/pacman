@@ -1,6 +1,8 @@
 from draws import draw_unit
 import directions
 from math import sqrt, pow
+import pygame
+from pygame import draw as pydraw
 
 
 class Character:
@@ -33,6 +35,17 @@ class Character:
         (matrix_y, matrix_x) = self.get_matrix_coordinates()
         draw_unit(window, self.matrix[matrix_y][matrix_x],
                   (matrix_x*self.width, matrix_y*self.width))
+        extra_unit = (matrix_y,matrix_x+1)
+        if self.direction == directions.LEFT:
+            extra_unit = (matrix_y,matrix_x-1)
+        if self.direction == directions.UP:
+            extra_unit = (matrix_y-1,matrix_x)
+        if self.direction == directions.DOWN:
+            extra_unit = (matrix_y+1,matrix_x)
+        
+        draw_unit(window, self.matrix[extra_unit[0]][extra_unit[1]],
+                  (extra_unit[1]*self.width, extra_unit[0]*self.width))
+        
 
     def move(self):
         (matrix_y, matrix_x) = self.get_matrix_coordinates()
