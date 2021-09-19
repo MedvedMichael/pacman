@@ -5,6 +5,7 @@ from random import randint
 from pygame.rect import Rect
 from a_star import a_star
 from enemy import Enemy
+from maze_generate import maze_generate
 from pacman import Pacman
 import pygame
 import pygame.display as display
@@ -22,9 +23,9 @@ from copy import deepcopy
 
 [empty, wall, small_food, big_food] = images
 
-start_matrix = list(map(lambda line: list(
-    map(lambda x: int(x), line[:-1])), open("level3.txt", "r")))
-
+# start_matrix = list(map(lambda line: list(
+#     map(lambda x: int(x), line[:-1])), open("level3.txt", "r")))
+start_matrix = maze_generate(20, 10)
 game_bounds = [len(start_matrix[0])*unit_width,
                len(start_matrix)*unit_width + 40]
 
