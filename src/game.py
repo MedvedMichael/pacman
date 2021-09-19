@@ -140,7 +140,7 @@ def game():
     toQuit = False
     run = True
     while run:
-        # pygame.time.delay(5)
+        pygame.time.delay(3)
         ticks += 1
         if ticks % 10 == 0:
             change_skin_ticks += 1
@@ -152,7 +152,6 @@ def game():
             else:
                 check.paintover(window)
                 enemies.remove(check)
-                index = colors.index(check.type)
                 
                 player.score += 400
         for event in events.get():
@@ -160,20 +159,22 @@ def game():
                 run = False
                 toQuit = True
 
-        if ticks%10 == 0:
+        if ticks%50 == 0:
             for color in colors:
                 if color not in list(map(lambda x: x.type,enemies)):
-                    index = 0
-                    distance = 0
-                    for i in range(len(enemies_start_positions)):
-                        delta = euclidean_distance(
-                            player.get_matrix_coordinates(), enemies_start_positions[i])
-                        if delta > distance:
-                            distance = delta
-                            index = i
+                    # index = 0
+                    # distance = 0
+                    # for i in range(len(enemies_start_positions)):
+                    #     delta = euclidean_distance(
+                    #         player.get_matrix_coordinates(), enemies_start_positions[i])
+                    #     if delta > distance:
+                    #         distance = delta
+                    #         index = i
+                    index = colors.index(color)
                     new_enemy = Enemy(
                         enemies_start_positions[index][0], enemies_start_positions[index][1], unit_width, matrix, color)
                     enemies.append(new_enemy)
+                    break
         keys = key.get_pressed()
 
         player.paintover(window)
