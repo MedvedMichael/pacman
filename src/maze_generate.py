@@ -1,4 +1,5 @@
 from math import e
+import math
 from random import randint, shuffle
 
 
@@ -67,12 +68,17 @@ def maze_generate(free_width, free_height):
         base_matrix[spaces[i][0]][spaces[i][1]] = 6
 
     for i in range(5, len(spaces)):
-        choice = randint(0, 10)
-        if choice >= 8:
+        choice = randint(0, 100)
+        if choice >= 95:
             base_matrix[spaces[i][0]][spaces[i][1]] = 3
-        elif choice >= 3:
+        elif choice >= 40:
             base_matrix[spaces[i][0]][spaces[i][1]] = 2
 
+    for i in range(1, len(base_matrix) - 1):
+        for j in range(1, len(base_matrix[0]) - 1):
+            if base_matrix[i][j] == 1:
+                choice = randint(0, 10)
+                if choice >= 5:
+                    base_matrix[i][j] = 0
+
     return base_matrix
-
-

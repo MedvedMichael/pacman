@@ -1,8 +1,11 @@
+from a_star import a_star
 from character import Character
 import directions
 import pygame.image as image
 import pygame.transform as transform
 from random import randint
+
+from wayfinders import bfs, dfs
 
 
 class Enemy(Character):
@@ -11,6 +14,8 @@ class Enemy(Character):
         dirs = ["left", "up", "right", "down"]
         self.walk_images = []
         self.color = type
+        self.path = []
+        self.type = type
         for name in dirs:
             self.walk_images.append(
                 [transform.scale(
@@ -44,3 +49,20 @@ class Enemy(Character):
                     available_directions.remove(directions.UP)
             random_choice = randint(0, len(available_directions) - 1)
             self.direction = available_directions[random_choice]
+
+    def auto_move(self, player_coords, enemies_coords):
+        moved = Character.move(self)
+        if self.y % self.width == 0 and self.x % self.width == 0:
+            current_coord = self.get_matrix_coordinates()
+            self.path = bfs(
+                self.matrix, current_coord, player_coords, enemies_coords)
+            if len(self.path) > 0:
+                next_node = self.path[1 if len(self.path) > 1 else 0]
+                vector_dict = {(0, 1): directions.LEFT, (0, -1): directions.RIGHT,
+                               (-1, 0): directions.DOWN, (1, 0): directions.UP}
+                delta = (current_coord[0] - next_node[0],
+                         current_coord[1] - next_node[1])
+
+                new_direction = vector_dict.get(delta)
+                if new_direction is not None:
+                    self.direction = new_direction

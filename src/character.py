@@ -13,6 +13,7 @@ class Character:
         self.direction = directions.RIGHT
         self.choice = directions.NOWAY
         self.matrix = matrix
+        self.speed = 1
 
     def get_current_frame(self, state):
         return self.walk_images[self.direction][state]
@@ -25,6 +26,14 @@ class Character:
             (1 if self.x % self.width != 0 and self.direction == directions.LEFT else 0)
         matrix_y = self.y // self.width + \
             (1 if self.y % self.width != 0 and self.direction == directions.UP else 0)
+
+        return (matrix_y, matrix_x)
+    
+    def get_next_matrix_coordinates(self):
+        matrix_x = self.x // self.width + \
+            (1 if self.x % self.width != 0 and self.direction == directions.RIGHT else 0)
+        matrix_y = self.y // self.width + \
+            (1 if self.y % self.width != 0 and self.direction == directions.DOWN else 0)
 
         return (matrix_y, matrix_x)
 
@@ -61,17 +70,17 @@ class Character:
 
         moved = False
         if self.direction == directions.LEFT and not (self.x % self.width == 0 and self.matrix[matrix_y][matrix_x-1] == 1):
-            self.x -= 1
+            self.x -= self.speed
             moved = True
         elif self.direction == directions.UP and not (self.y % self.width == 0 and self.matrix[matrix_y-1][matrix_x] == 1):
-            self.y -= 1
+            self.y -= self.speed
             moved = True
         elif self.direction == directions.RIGHT and not (self.x % self.width == 0 and self.matrix[matrix_y][matrix_x+1] == 1):
             moved = True
-            self.x += 1
+            self.x += self.speed
         elif self.direction == directions.DOWN and not (self.y % self.width == 0 and self.matrix[matrix_y+1][matrix_x] == 1):
             moved = True
-            self.y += 1
+            self.y += self.speed
 
         return moved
 
@@ -84,7 +93,7 @@ class Character:
         return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
     def check_collision(self, character):
-        return Character.get_distance_between_coordinates((self.x, self.y), (character.x, character.y)) <= self.width / 2
+        return Character.get_distance_between_coordinates((self.x, self.y), (character.x, character.y)) <= self.width * 0.4
 
     def draw(self, window, state):
         window.blit(self.get_current_frame(state), (self.x, self.y))

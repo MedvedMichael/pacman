@@ -3,7 +3,7 @@ from math import e
 from random import randint
 
 from pygame.rect import Rect
-from a_star import a_star
+from a_star import a_star, euclidean_distance
 from enemy import Enemy
 from maze_generate import maze_generate
 from pacman import Pacman
@@ -24,7 +24,7 @@ from copy import deepcopy
 [empty, wall, small_food, big_food] = images
 
 # start_matrix = list(map(lambda line: list(
-#     map(lambda x: int(x), line[:-1])), open("level3.txt", "r")))
+# map(lambda x: int(x), line[:-1])), open("level3.txt", "r")))
 start_matrix = maze_generate(20, 10)
 game_bounds = [len(start_matrix[0])*unit_width,
                len(start_matrix)*unit_width + 40]
@@ -81,6 +81,8 @@ def menu():
         keys = key.get_pressed()
         if keys[pygame.K_SPACE]:
             toQuit = game()
+            global start_matrix
+            start_matrix = maze_generate(20, 10)
             if toQuit:
                 break
 
@@ -106,6 +108,7 @@ def game():
      pacman_start_position) = get_characters_start_positions(matrix)
     enemies = [Enemy(enemies_start_positions[i][0], enemies_start_positions[i]
                      [1], unit_width, matrix, colors[i]) for i in range(len(colors))]
+    # enemies = []
     player = Pacman(
         pacman_start_position[0], pacman_start_position[1], unit_width, matrix)
 
@@ -123,10 +126,12 @@ def game():
 
         if last_score != player.score:
             textsurface = font.render(
-                'Score: ' + str(player.score) +
-                "   Mode " + mode +
-                " Time: " + str(round(time*10000)/10000) +
-                " Way length: " + str(len(way)), False, (255, 255, 255))
+                'Score: ' + str(player.score),
+                # + " Time: " + str(round(time*10000)/10000) +
+                # " Way length: " + str(len(way)),
+                # "   Mode " + mode, 
+                False, (255, 255, 255)
+            )
             pydraw.rect(window, (0, 0, 0, 255), pygame.Rect(
                 0, game_bounds[1]-40, game_bounds[0], game_bounds[1]))
             window.blit(textsurface, (10, game_bounds[1]-40))
@@ -135,7 +140,7 @@ def game():
     toQuit = False
     run = True
     while run:
-        pygame.time.delay(10)
+        # pygame.time.delay(5)
         ticks += 1
         if ticks % 10 == 0:
             change_skin_ticks += 1
@@ -147,34 +152,51 @@ def game():
             else:
                 check.paintover(window)
                 enemies.remove(check)
-                new_enemy = Enemy(enemies_start_positions[0][0], enemies_start_positions[0]
-                                  [1], unit_width, matrix, check.color)
-                enemies.append(new_enemy)
+                index = colors.index(check.type)
+                
                 player.score += 400
         for event in events.get():
             if event.type == pygame.QUIT:
                 run = False
                 toQuit = True
+
+        if ticks%10 == 0:
+            for color in colors:
+                if color not in list(map(lambda x: x.type,enemies)):
+                    index = 0
+                    distance = 0
+                    for i in range(len(enemies_start_positions)):
+                        delta = euclidean_distance(
+                            player.get_matrix_coordinates(), enemies_start_positions[i])
+                        if delta > distance:
+                            distance = delta
+                            index = i
+                    new_enemy = Enemy(
+                        enemies_start_positions[index][0], enemies_start_positions[index][1], unit_width, matrix, color)
+                    enemies.append(new_enemy)
         keys = key.get_pressed()
 
         player.paintover(window)
-        player.move()
+        enemies_coords = list(
+            map(lambda enemy: enemy.get_next_matrix_coordinates(), enemies))
+        player.auto_move(enemies_coords)
 
         for enemy in enemies:
             enemy.paintover(window)
-            enemy.move()
+            enemy.auto_move(player.get_matrix_coordinates(), enemies_coords)
 
         if player.find_way:
             player.find_way = False
-            func = wayfinders.bfs if mode == 'bfs' else wayfinders.dfs if mode == 'dfs' else a_star if mode == 'a_star' else wayfinders.uniform_cost_search
-            player_coords = player.get_matrix_coordinates()
-            enemy_coords = enemies[0].get_matrix_coordinates()
-            enemies_coords = list(
-                map(lambda enemy: enemy.get_matrix_coordinates(), enemies))
-            (way, time) = wayfinders.count_time(lambda: func(
-                matrix, player_coords, enemy_coords, enemies_coords))
+            # func = wayfinders.bfs if mode == 'bfs' else wayfinders.dfs if mode == 'dfs' else a_star if mode == 'a_star' else wayfinders.uniform_cost_search
+            # player_coords = player.get_matrix_coordinates()
+            # enemy_coords = enemies[0].get_matrix_coordinates()
+            # enemies_coords = list(
+            # map(lambda enemy: enemy.get_next_matrix_coordinates(), enemies))
+            # (way, time) = wayfinders.count_time(lambda: func(
+            # matrix, player_coords, (1, 1), enemies_coords))
             # print(time)
             # print(len(way))
+            way = player.path
             for node in last_way:
                 draw_unit(window, matrix[node[0]][node[1]],
                           (node[1]*unit_width, node[0]*unit_width))
@@ -204,20 +226,20 @@ def game():
         elif keys[pygame.K_DOWN]:
             player.change_direction(directions.DOWN)
 
-        elif keys[pygame.K_d]:
-            mode = 'dfs'
+        # elif keys[pygame.K_d]:
+        #     mode = 'dfs'
 
-        elif keys[pygame.K_b]:
-            mode = 'bfs'
+        # elif keys[pygame.K_b]:
+        #     mode = 'bfs'
 
-        elif keys[pygame.K_u]:
-            mode = 'ucs'
+        # elif keys[pygame.K_u]:
+        #     mode = 'ucs'
 
-        elif keys[pygame.K_a]:
-            mode = 'a_star'
+        # elif keys[pygame.K_a]:
+        #     mode = 'a_star'
 
-        elif keys[pygame.K_s]:
-            show_way = not show_way
+        # elif keys[pygame.K_s]:
+        #     show_way = not show_way
 
     global last_game_result
     last_game_result = (player.score, player.win)

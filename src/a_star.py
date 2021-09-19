@@ -1,5 +1,6 @@
+from copy import deepcopy
 from wayfinders import get_neighbors
-from math import sqrt
+from math import e, sqrt
 
 
 class Node:
@@ -32,11 +33,10 @@ def a_star(matrix, start_coord, finish_coord, enemies_coords=[]):
     visited = []
     to_visit = []
     to_visit.append(start_node)
-    visited.extend([Node(coord) for coord in enemies_coords])
+    counter = len(matrix)*len(matrix[0])
 
-    # counter = 110
-
-    while len(to_visit) != 0:
+    while len(to_visit) != 0 and counter >= 0:
+        counter -= 1
         # while counter != 0:
         # counter -= 1
         curr_node = to_visit[0]
@@ -57,6 +57,8 @@ def a_star(matrix, start_coord, finish_coord, enemies_coords=[]):
         neighboring_nodes = list(map(lambda coord: Node(coord, curr_node),
                                      get_neighbors(matrix, curr_node.coord)))
 
+        # print(list(map(lambda x: x.coord, neighboring_nodes)))
+        # print(enemies_coords)
         for neighbor in neighboring_nodes:
 
             if len([
@@ -64,20 +66,14 @@ def a_star(matrix, start_coord, finish_coord, enemies_coords=[]):
                 for visited_neighbor in visited
                 if visited_neighbor.coord == neighbor.coord
             ]) > 0:
-                print(len(visited))
-
                 continue
 
-            # if len([
-            #     enemy
-            #     for enemy in enemies_coords
-            #     if enemy == neighbor.coord
-            # ]) > 0:
-            #     print(enemies_coords)
-            #     print(neighbor.coord)
-            #     print(list(map(lambda x: x.coord, to_visit)))
-
-            #     continue
+            if len([
+                enemy
+                for enemy in enemies_coords
+                if enemy == neighbor.coord
+            ]) > 0:
+                continue
 
             neighbor.g = curr_node.g + 1
             neighbor.h = euclidean_distance(neighbor.coord, finish_coord)
@@ -90,4 +86,7 @@ def a_star(matrix, start_coord, finish_coord, enemies_coords=[]):
                     and to_visit_node.g < neighbor.g]) > 0:
                 continue
 
+            # print(neighbor.coord)
             to_visit.append(neighbor)
+
+    return []
