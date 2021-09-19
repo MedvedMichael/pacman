@@ -15,7 +15,7 @@ def get_neighbors(matrix, current_coord):
     return neighboring_nodes
 
 
-def bfs(matrix, start_coord, finish_coord):
+def bfs(matrix, start_coord, finish_coord, enemies_coords=[]):
     start_time = time.time()
     queue = [start_coord]
     parents = {start_coord: None}
@@ -42,7 +42,7 @@ def get_path(parents, finish_coord):
     return arr
 
 
-def dfs(matrix, start_coord, finish_coord):
+def dfs(matrix, start_coord, finish_coord, enemies_coords=[]):
     start_time = time.time()
     stack = [start_coord]
     result = []
@@ -58,7 +58,8 @@ def dfs(matrix, start_coord, finish_coord):
             return result
         (cy, cx) = current_coord
         visited[cy][cx] = True
-        neighboring_nodes = list(filter(lambda x: not visited[x[0]][x[1]],get_neighbors(matrix, current_coord)))
+        neighboring_nodes = list(
+            filter(lambda x: not visited[x[0]][x[1]], get_neighbors(matrix, current_coord)))
 
         # See for changes
         # neighboring_nodes.reverse()
@@ -67,10 +68,9 @@ def dfs(matrix, start_coord, finish_coord):
         if len(neighboring_nodes) == 0:
             stack.pop()
             result.pop()
-            
 
 
-def uniform_cost_search(matrix, start_coord, finish_coord):
+def uniform_cost_search(matrix, start_coord, finish_coord, enemies_coords=[]):
     visited = [[False for i in range(len(matrix[0]))]
                for j in range(len(matrix))]
 

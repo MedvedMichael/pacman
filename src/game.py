@@ -1,7 +1,9 @@
 from hashlib import new
+from math import e
 from random import randint
 
 from pygame.rect import Rect
+from a_star import a_star
 from enemy import Enemy
 from pacman import Pacman
 import pygame
@@ -145,16 +147,13 @@ def game():
                 check.paintover(window)
                 enemies.remove(check)
                 new_enemy = Enemy(enemies_start_positions[0][0], enemies_start_positions[0]
-                     [1], unit_width, matrix, check.color)
+                                  [1], unit_width, matrix, check.color)
                 enemies.append(new_enemy)
-                player.score+=400
+                player.score += 400
         for event in events.get():
             if event.type == pygame.QUIT:
                 run = False
                 toQuit = True
-                if player.timer:
-                    print('lalala')
-                    player.timer.cancel()
         keys = key.get_pressed()
 
         player.paintover(window)
@@ -166,11 +165,13 @@ def game():
 
         if player.find_way:
             player.find_way = False
-            func = wayfinders.bfs if mode == 'bfs' else wayfinders.dfs if mode == 'dfs' else wayfinders.uniform_cost_search
+            func = wayfinders.bfs if mode == 'bfs' else wayfinders.dfs if mode == 'dfs' else a_star if mode == 'a_star' else wayfinders.uniform_cost_search
             player_coords = player.get_matrix_coordinates()
             enemy_coords = enemies[0].get_matrix_coordinates()
+            enemies_coords = list(
+                map(lambda enemy: enemy.get_matrix_coordinates(), enemies))
             (way, time) = wayfinders.count_time(lambda: func(
-                matrix, player_coords, enemy_coords))
+                matrix, player_coords, enemy_coords, enemies_coords))
             # print(time)
             # print(len(way))
             for node in last_way:
@@ -210,10 +211,12 @@ def game():
 
         elif keys[pygame.K_u]:
             mode = 'ucs'
-        
+
+        elif keys[pygame.K_a]:
+            mode = 'a_star'
+
         elif keys[pygame.K_s]:
             show_way = not show_way
-            
 
     global last_game_result
     last_game_result = (player.score, player.win)
