@@ -24,7 +24,7 @@ class Enemy(Character):
                     (width, width))
                  for i in range(2)])
 
-    def move(self):
+    def random_move(self):
         moved = Character.move(self)
         if not moved or (self.y % self.width == 0 and self.x % self.width == 0 and randint(0, 100) > 70):
             (matrix_y, matrix_x) = self.get_matrix_coordinates()

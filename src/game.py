@@ -1,11 +1,16 @@
 from hashlib import new
 from math import e
+import math
+from os import write
 from random import randint
+import time
+from csv_writer import csv_write
 
 from pygame.rect import Rect
 from a_star import a_star, euclidean_distance
 from enemy import Enemy
 from maze_generate import maze_generate
+from minimax import GameState, generate_tree, minimax
 from pacman import Pacman
 import pygame
 import pygame.display as display
@@ -22,10 +27,10 @@ import pygame.font as pyfont
 from copy import deepcopy
 
 [empty, wall, small_food, big_food] = images
-
+matrix_bounds = (10, 10)
 # start_matrix = list(map(lambda line: list(
 # map(lambda x: int(x), line[:-1])), open("level3.txt", "r")))
-start_matrix = maze_generate(20, 10)
+start_matrix = maze_generate(matrix_bounds[0], matrix_bounds[1])
 game_bounds = [len(start_matrix[0])*unit_width,
                len(start_matrix)*unit_width + 40]
 
@@ -79,12 +84,14 @@ def menu():
         pygame.time.delay(10)
         init_draw()
         keys = key.get_pressed()
-        if keys[pygame.K_SPACE]:
-            toQuit = game()
-            global start_matrix
-            start_matrix = maze_generate(20, 10)
-            if toQuit:
-                break
+        # if keys[pygame.K_SPACE]:
+        toQuit = game()
+        global start_matrix
+        start_matrix = maze_generate(matrix_bounds[0], matrix_bounds[1])
+        if toQuit:
+            return
+        # else:
+        #     menu()
 
         for event in events.get():
             if event.type == pygame.QUIT:
@@ -103,9 +110,10 @@ def menu():
 def game():
     init_draw()
     matrix = deepcopy(start_matrix)
-    colors = ["red", "pink", "blue", "yellow"]
+    colors = ["red" , "pink"]#, "blue", "yellow"]
     (enemies_start_positions,
      pacman_start_position) = get_characters_start_positions(matrix)
+    # print(enemies_start_positions)
     enemies = [Enemy(enemies_start_positions[i][0], enemies_start_positions[i]
                      [1], unit_width, matrix, colors[i]) for i in range(len(colors))]
     # enemies = []
@@ -129,7 +137,7 @@ def game():
                 'Score: ' + str(player.score),
                 # + " Time: " + str(round(time*10000)/10000) +
                 # " Way length: " + str(len(way)),
-                # "   Mode " + mode, 
+                # "   Mode " + mode,
                 False, (255, 255, 255)
             )
             pydraw.rect(window, (0, 0, 0, 255), pygame.Rect(
@@ -139,8 +147,9 @@ def game():
 
     toQuit = False
     run = True
+    start_time = time.time()
     while run:
-        pygame.time.delay(3)
+        # pygame.time.delay(10)
         ticks += 1
         if ticks % 10 == 0:
             change_skin_ticks += 1
@@ -152,16 +161,16 @@ def game():
             else:
                 check.paintover(window)
                 enemies.remove(check)
-                
+
                 player.score += 400
         for event in events.get():
             if event.type == pygame.QUIT:
                 run = False
                 toQuit = True
 
-        if ticks%50 == 0:
+        if ticks % 10 == 0:
             for color in colors:
-                if color not in list(map(lambda x: x.type,enemies)):
+                if color not in list(map(lambda x: x.type, enemies)):
                     # index = 0
                     # distance = 0
                     # for i in range(len(enemies_start_positions)):
@@ -180,12 +189,27 @@ def game():
         player.paintover(window)
         enemies_coords = list(
             map(lambda enemy: enemy.get_next_matrix_coordinates(), enemies))
-        player.auto_move(enemies_coords)
+        # player.auto_move(enemies_coords)
+        current_matrix = deepcopy(player.matrix)
+        player_coords = player.get_matrix_coordinates()
+        # print(player_coords)
+        current_matrix[player_coords[0]][player_coords[1]] = 5
+        for coord in enemies_coords:
+            current_matrix[coord[0]][coord[1]] = 6
 
+        player.auto_move(enemies_coords)
+        # print("player.target")
+        # print(player.target)
+
+        # player.minimax_move(current_matrix)
+        # player.paintover(window)
         for enemy in enemies:
             enemy.paintover(window)
             enemy.auto_move(player.get_matrix_coordinates(), enemies_coords)
+            # enemy.random_move()
 
+        # print('\n\n\n')
+        """
         if player.find_way:
             player.find_way = False
             # func = wayfinders.bfs if mode == 'bfs' else wayfinders.dfs if mode == 'dfs' else a_star if mode == 'a_star' else wayfinders.uniform_cost_search
@@ -210,7 +234,7 @@ def game():
             # For debug
             # pydraw.rect(window, (255, 0, 0), pygame.Rect(
             #     enemy_coords[1]*unit_width, enemy_coords[0]*unit_width, unit_width, unit_width), 2)
-
+        """
         if player.win:
             break
         draw()
@@ -244,6 +268,7 @@ def game():
 
     global last_game_result
     last_game_result = (player.score, player.win)
+    csv_write('output.csv', [str(player.win), str(time.time() - start_time), str(player.score), 'bfs', 'minimax'])
     return toQuit
 
 

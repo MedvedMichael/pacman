@@ -64,7 +64,7 @@ def maze_generate(free_width, free_height):
 
     shuffle(spaces)
     base_matrix[spaces[0][0]][spaces[0][1]] = 5
-    for i in range(1, 5):
+    for i in range(1, 3):
         base_matrix[spaces[i][0]][spaces[i][1]] = 6
 
     for i in range(5, len(spaces)):
@@ -73,6 +73,7 @@ def maze_generate(free_width, free_height):
             base_matrix[spaces[i][0]][spaces[i][1]] = 3
         elif choice >= 40:
             base_matrix[spaces[i][0]][spaces[i][1]] = 2
+            # break
 
     for i in range(1, len(base_matrix) - 1):
         for j in range(1, len(base_matrix[0]) - 1):

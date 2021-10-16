@@ -13,7 +13,7 @@ class Character:
         self.direction = directions.RIGHT
         self.choice = directions.NOWAY
         self.matrix = matrix
-        self.speed = 1
+        self.speed = width
 
     def get_current_frame(self, state):
         return self.walk_images[self.direction][state]
@@ -26,7 +26,6 @@ class Character:
             (1 if self.x % self.width != 0 and self.direction == directions.LEFT else 0)
         matrix_y = self.y // self.width + \
             (1 if self.y % self.width != 0 and self.direction == directions.UP else 0)
-
         return (matrix_y, matrix_x)
     
     def get_next_matrix_coordinates(self):
@@ -41,7 +40,9 @@ class Character:
         # Last method of paintover, redraws food!!!
         # draw_unit(window, draws.EMPTY, (self.x, self.y))
 
-        (matrix_y, matrix_x) = self.get_matrix_coordinates()
+        (matrix_y, matrix_x) = self.get_next_matrix_coordinates()
+        # print('Paintover')
+        # print(self.get_matrix_coordinates())
         draw_unit(window, self.matrix[matrix_y][matrix_x],
                   (matrix_x*self.width, matrix_y*self.width))
         extra_unit = (matrix_y,matrix_x+1)
