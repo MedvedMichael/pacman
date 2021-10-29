@@ -268,7 +268,7 @@ def game():
 
     global last_game_result
     last_game_result = (player.score, player.win)
-    csv_write('output.csv', [str(player.win), str(time.time() - start_time), str(player.score), 'bfs', 'minimax'])
+    csv_write('output2.csv', [str(player.win), str(time.time() - start_time), str(player.score), 'bfs', 'a-star'])
     return toQuit
 
 
