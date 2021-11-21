@@ -3,6 +3,7 @@ import random
 from typing import List
 from copy import deepcopy
 from a_star import a_star
+import constants
 
 from wayfinders import bfs, dfs, get_neighbors
 
@@ -14,19 +15,19 @@ class GameState:
         self.is_pacman_angry = is_pacman_angry
 
     def __str__(self) -> str:
-        return str(self.score)  # + ''.join([str(line)+"\n" for line in self.matrix]) \
+        return '\n'.join([str(line) for line in self.matrix]) \
 
     def get_pacman_position(self):
         for i in range(len(self.matrix)):
             for j in range(len(self.matrix[0])):
-                if self.matrix[i][j] == 5:
+                if self.matrix[i][j] == constants.PLAYER:
                     return (i, j)
 
     def get_enemies_positions(self):
         coords = []
         for i in range(len(self.matrix)):
             for j in range(len(self.matrix[0])):
-                if self.matrix[i][j] == 6:
+                if self.matrix[i][j] == constants.ENEMY:
                     coords.append((i, j))
         return coords
 
@@ -38,12 +39,13 @@ class GameState:
         new_matrix[new_coord[0]][new_coord[1]] = character_number
         new_score = self.score
         new_angry = self.is_pacman_angry
-        if character_number == 5:
-            if new_coord_value == 2:
+        if character_number == constants.PLAYER:
+            if new_coord_value == constants.SMALL_FOOD:
                 new_score += 10
-            elif new_coord_value == 3:
+            elif new_coord_value == constants.BIG_FOOD:
                 new_angry = True
-        return GameState(new_matrix, new_angry, new_score)
+        state = GameState(new_matrix, new_angry, new_score)
+        return state
 
 
 class Node:
@@ -54,11 +56,8 @@ class Node:
 
     def __str__(self) -> str:
         output = str(self.state) + " " + str(self.value) + "\n"
-        output += "[\n"
-        for child in self.children:
-            output += " " + str(child)
-
-        output += "]\n"
+        strings = '\n'.join(map(lambda x: '\n'.join(map(lambda y: " " + y,str(x).split('\n'))), self.children))
+        output += '{\n' + strings + '}\n' if strings != '' else ''
         return output
 
     def count(self, counter):
@@ -68,7 +67,7 @@ class Node:
         return counter
 
 
-def evaluate(node: Node, target: tuple[int, int]):
+def evaluate(node: Node, target):
     delta = math.inf
     pacman_coord = node.state.get_pacman_position()
     if target == pacman_coord:
@@ -91,26 +90,26 @@ def evaluate(node: Node, target: tuple[int, int]):
     return output
 
 
-def generate_tree(start_state: GameState, target):
+def generate_tree(start_state: GameState, target, depth=2):
     start_node = Node(start_state, None)
-    generate_tree_recurs(start_node, 1, start_state.matrix, target)
+    generate_tree_recurs(start_node, depth, start_state.matrix, target)
     return start_node
 
 
 def generate_tree_recurs(curr_node: Node, depth, start_matrix, target):
-    if depth > 3:
+    if depth <= 0:
         curr_node.value = evaluate(curr_node, target)
         return None
     curr_state = curr_node.state
     pacman_coord = curr_state.get_pacman_position()
     enemies_coords = curr_state.get_enemies_positions()
-    if depth % 2 == 1:
+    if depth % 2 == 0:
         # print(pacman_coord)
         neighboring_nodes = list(filter(
             lambda x: not curr_state.is_pacman_angry and x not in enemies_coords, get_neighbors(curr_state.matrix, pacman_coord)))
 
         new_nodes = list(map(lambda node: Node(curr_state.change_character_position(
-            pacman_coord, node, 0), None), neighboring_nodes))
+            pacman_coord, node, constants.EMPTY), None), neighboring_nodes))
 
         curr_node.children = new_nodes
 
@@ -126,12 +125,12 @@ def generate_tree_recurs(curr_node: Node, depth, start_matrix, target):
             state = curr_state
             for i in range(len(enemies_coords)):
                 state = state.change_character_position(
-                    enemies_coords[i], variant[i], start_matrix[enemies_coords[i][0]][enemies_coords[i][1]])
+                    enemies_coords[i], variant[i], constants.EMPTY)
 
             new_nodes.append(Node(state, None))
         curr_node.children = new_nodes
     for child in curr_node.children:
-        generate_tree_recurs(child, depth+1, start_matrix, target)
+        generate_tree_recurs(child, depth-1, start_matrix, target)
 
 
 def get_variations(arr):

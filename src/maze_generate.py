@@ -1,6 +1,7 @@
 from math import e
 import math
 from random import randint, shuffle
+import constants
 
 
 def generate_base_matrix(free_width, free_height):
@@ -21,18 +22,24 @@ def break_walls(base_matrix, start_node, end_node):
     # real_end_node = (end_node[0]*2 + 1, end_node[1]*2 + 1)
     delta = (end_node[1] - start_node[1], end_node[0] - start_node[0])
     if delta[0] == -1:
-        base_matrix[real_start_node[0]][real_start_node[1]-1] = 0
+        base_matrix[real_start_node[0]][real_start_node[1]-1] = constants.EMPTY
     elif delta[0] == 1:
-        base_matrix[real_start_node[0]][real_start_node[1]+1] = 0
+        base_matrix[real_start_node[0]][real_start_node[1]+1] = constants.EMPTY
     elif delta[1] == -1:
-        base_matrix[real_start_node[0] - 1][real_start_node[1]] = 0
+        base_matrix[real_start_node[0] -
+                    1][real_start_node[1]] = constants.EMPTY
     elif delta[1] == 1:
-        base_matrix[real_start_node[0] + 1][real_start_node[1]] = 0
+        base_matrix[real_start_node[0] +
+                    1][real_start_node[1]] = constants.EMPTY
 
     return base_matrix
 
 
-def maze_generate(free_width, free_height):
+def maze_generate(free_width, free_height, player_start_coords=(1, 1), enemies_coords=[]):
+    player_start_coords = (
+        player_start_coords[0]*2+1, player_start_coords[1]*2+1)
+    enemies_coords = list(map(lambda coord: (
+        coord[0]*2+1, coord[1]*2+1), enemies_coords))
     base_matrix = generate_base_matrix(free_width, free_height)
     visited = [[False for i in range(free_width)] for j in range(free_height)]
     current_node = (0, 0)
@@ -56,23 +63,27 @@ def maze_generate(free_width, free_height):
         else:
             current_node = stack.pop()
 
+    base_matrix[player_start_coords[0]
+                ][player_start_coords[1]] = constants.PLAYER
     spaces = []
     for i in range(len(base_matrix)):
         for j in range(len(base_matrix[0])):
-            if base_matrix[i][j] == 0:
+            if base_matrix[i][j] == constants.EMPTY:
                 spaces.append((i, j))
 
     shuffle(spaces)
-    base_matrix[spaces[0][0]][spaces[0][1]] = 5
-    for i in range(1, 3):
-        base_matrix[spaces[i][0]][spaces[i][1]] = 6
+    real_enemies_coords = enemies_coords if len(
+        enemies_coords) != 0 else spaces[1, 3]
+    for coord in real_enemies_coords:
+        base_matrix[coord[0]][coord[1]] = constants.ENEMY
 
     for i in range(5, len(spaces)):
         choice = randint(0, 100)
-        if choice >= 95:
-            base_matrix[spaces[i][0]][spaces[i][1]] = 3
-        elif choice >= 40:
-            base_matrix[spaces[i][0]][spaces[i][1]] = 2
+        if base_matrix[spaces[i][0]][spaces[i][1]] == constants.EMPTY:
+            if choice >= 95:
+                base_matrix[spaces[i][0]][spaces[i][1]] = constants.BIG_FOOD
+            elif choice >= 40:
+                base_matrix[spaces[i][0]][spaces[i][1]] = constants.SMALL_FOOD
             # break
 
     for i in range(1, len(base_matrix) - 1):
@@ -80,6 +91,6 @@ def maze_generate(free_width, free_height):
             if base_matrix[i][j] == 1:
                 choice = randint(0, 10)
                 if choice >= 5:
-                    base_matrix[i][j] = 0
+                    base_matrix[i][j] = constants.EMPTY
 
     return base_matrix
