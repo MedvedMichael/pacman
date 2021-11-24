@@ -3,7 +3,7 @@
         math
 )
 
-(setv dataset (pd.read_csv "./output2.csv"))
+(setv dataset (pd.read_csv "../output2.csv"))
 (setv time (get dataset "time"))
 (setv score (get dataset "score"))
 

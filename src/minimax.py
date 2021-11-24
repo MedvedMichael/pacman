@@ -55,7 +55,7 @@ class Node:
         self.children: list[Node] = []
 
     def __str__(self) -> str:
-        output = str(self.state) + " " + str(self.value) + "\n"
+        output = str(self.state) + " \nValue: " + str(self.value) + "\n"
         strings = '\n'.join(map(lambda x: '\n'.join(map(lambda y: " " + y,str(x).split('\n'))), self.children))
         output += '{\n' + strings + '}\n' if strings != '' else ''
         return output
