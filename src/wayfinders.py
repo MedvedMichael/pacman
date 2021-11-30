@@ -25,9 +25,8 @@ def bfs(matrix, start_coord, finish_coord, enemies_coords=[]):
             return get_path(parents, finish_coord)
 
         neighboring_nodes = get_neighbors(matrix, current_coord)
-
         for node in neighboring_nodes:
-            if node not in parents:
+            if node not in parents and node not in enemies_coords:
                 parents[node] = current_coord
                 queue.append(node)
 

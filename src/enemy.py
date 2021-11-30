@@ -56,7 +56,7 @@ class Enemy(Character):
             current_coord = self.get_matrix_coordinates()
             self.path = bfs(
                 self.matrix, current_coord, player_coords, enemies_coords)
-            if len(self.path) > 0:
+            if self.path and len(self.path) > 0:
                 next_node = self.path[1 if len(self.path) > 1 else 0]
                 vector_dict = {(0, 1): directions.LEFT, (0, -1): directions.RIGHT,
                                (-1, 0): directions.DOWN, (1, 0): directions.UP}
